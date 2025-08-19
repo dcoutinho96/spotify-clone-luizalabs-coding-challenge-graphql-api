@@ -18,11 +18,7 @@
   "dependencies": {
     "@apollo/server": "^5.0.0",
     "@dcoutinho96/spotify-clone-luizalabs-coding-challenge-graphql-schema": "^0.1.8",
-    "body-parser": "^2.2.0",
-    "cors": "^2.8.5",
-    "express": "^5.1.0",
-    "graphql": "^16.11.0",
-    "reflect-metadata": "^0.2.2"
+    "graphql": "^16.11.0"
   },
   "devDependencies": {
     "@types/node": "^24.3.0",
