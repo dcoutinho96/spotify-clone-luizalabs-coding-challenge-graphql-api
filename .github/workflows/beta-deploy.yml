@@ -1,0 +1,44 @@
+name: CI & Deploy (BETA)
+
+on:
+  push:
+    branches: [ main ]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  packages: read
+
+jobs:
+  build:
+    name: Build
+    runs-on: ubuntu-latest
+    environment: BETA 
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          registry-url: https://npm.pkg.github.com/
+          scope: '@dcoutinho96'
+
+      - name: Point scope to GitHub Packages
+        run: echo "@dcoutinho96:registry=https://npm.pkg.github.com" > .npmrc
+
+      - name: Install
+        run: npm ci
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }} 
+
+      - name: Build
+        run: npm run build
+
+  deploy:
+    name: Deploy to Render 
+    runs-on: ubuntu-latest
+    needs: build
+    environment: BETA
+    steps:
+      - name: Trigger Render Deploy Hook
+        run: curl -sS -X POST "${{ secrets.RENDER_DEPLOY_HOOK }}"   # from env=BETA

@@ -4,23 +4,30 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"(no tests yet)\" && exit 0",
-    "dev": "node src/server.js",
-    "start": "NODE_ENV=production node src/server.js"
+    "dev": "ts-node --esm src/index.ts",
+    "build": "tsc",
+    "start": "node dist/index.js"
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
   "type": "module",
   "engines": {
-    "node": ">=18"
+    "node": ">=20"
   },
   "dependencies": {
     "@apollo/server": "^5.0.0",
-    "@dcoutinho96/spotify-clone-luizalabs-coding-challenge-graphql-schema": "^0.1.1",
+    "@dcoutinho96/spotify-clone-luizalabs-coding-challenge-graphql-schema": "^0.1.8",
     "body-parser": "^2.2.0",
     "cors": "^2.8.5",
     "express": "^5.1.0",
-    "graphql": "^16.11.0"
+    "graphql": "^16.11.0",
+    "reflect-metadata": "^0.2.2"
+  },
+  "devDependencies": {
+    "@types/node": "^24.3.0",
+    "nodemon": "^3.1.10",
+    "ts-node": "^10.9.2",
+    "typescript": "^5.9.2"
   }
 }
