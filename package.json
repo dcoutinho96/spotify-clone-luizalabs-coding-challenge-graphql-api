@@ -1,0 +1,26 @@
+{
+  "name": "spotify-clone-luizalabs-coding-challenge-graphql-api",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"(no tests yet)\" && exit 0",
+    "dev": "node src/server.js",
+    "start": "NODE_ENV=production node src/server.js"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "module",
+  "engines": {
+    "node": ">=18"
+  },
+  "dependencies": {
+    "@apollo/server": "^5.0.0",
+    "@dcoutinho96/spotify-clone-luizalabs-coding-challenge-graphql-schema": "^0.1.1",
+    "body-parser": "^2.2.0",
+    "cors": "^2.8.5",
+    "express": "^5.1.0",
+    "graphql": "^16.11.0"
+  }
+}
