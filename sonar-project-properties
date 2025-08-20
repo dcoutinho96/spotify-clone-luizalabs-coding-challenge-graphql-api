@@ -1,0 +1,8 @@
+sonar.organization=dcoutinho96
+sonar.projectKey=dcoutinho96_spotify-clone-luizalabs-coding-challenge-graphql-api
+sonar.sources=src
+sonar.tests=src
+sonar.test.inclusions=**/*.test.ts
+sonar.exclusions=dist/**,node_modules/**
+sonar.javascript.lcov.reportPaths=coverage/lcov.info
+sonar.newCode=referenceBranch=main
