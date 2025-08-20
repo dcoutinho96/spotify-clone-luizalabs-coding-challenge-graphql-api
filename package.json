@@ -17,7 +17,7 @@
   },
   "dependencies": {
     "@apollo/server": "^5.0.0",
-    "@dcoutinho96/spotify-clone-luizalabs-coding-challenge-graphql-schema": "^0.1.8",
+    "@dcoutinho96/spotify-clone-luizalabs-coding-challenge-graphql-schema": "^0.2.0",
     "dotenv": "^17.2.1",
     "graphql": "^16.11.0"
   },
