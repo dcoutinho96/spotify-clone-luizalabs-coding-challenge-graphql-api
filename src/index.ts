@@ -10,7 +10,7 @@ import { typeDefs } from '@dcoutinho96/spotify-clone-luizalabs-coding-challenge-
 
 const resolvers = {
   Query: {
-    hello: () => 'Hello from GraphQL schema 🎶',
+    hello: () => 'Hello World!!!',
   },
 };
 

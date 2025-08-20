@@ -1,5 +1,3 @@
-name: CI & Deploy (BETA)
-
 on:
   push:
     branches: [ main ]
@@ -41,4 +39,4 @@ jobs:
     environment: BETA
     steps:
       - name: Trigger Render Deploy Hook
-        run: curl -sS -X POST "${{ secrets.RENDER_DEPLOY_HOOK }}"   # from env=BETA
+        run: curl -sS -X POST "${{ secrets.RENDER_DEPLOY_HOOK }}"  
