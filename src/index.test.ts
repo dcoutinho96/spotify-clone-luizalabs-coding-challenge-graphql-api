@@ -1,16 +1,29 @@
-import { describe, it, expect, vi, beforeEach } from "vitest";
+import { describe, it, expect, vi, beforeEach, type Mock } from "vitest";
+import type { ApolloServer } from "@apollo/server";
 
+type Context = { auth: string | null };
+
+// Mock startStandaloneServer so we don't start a real server
 vi.mock("@apollo/server/standalone", () => ({
-  startStandaloneServer: vi.fn(async (_server: unknown, opts: any) => {
-    return { url: `http://localhost:${opts?.listen?.port ?? 4000}/` };
-  }),
+  startStandaloneServer: vi.fn(
+    async (
+      _server: ApolloServer<Context>,
+      opts: { listen?: { port?: number } } | undefined
+    ) => {
+      const port = opts?.listen?.port ?? 4000;
+      return { url: `http://localhost:${port}/` };
+    }
+  ),
 }));
 
+// Mock createApolloServer to avoid constructing a real Apollo instance
 vi.mock("./app.js", async () => {
   const actual = await vi.importActual<typeof import("./app.js")>("./app.js");
   return {
     ...actual,
-    createApolloServer: vi.fn(() => ({} as any)),
+    createApolloServer: vi.fn(
+      () => ({}) as unknown as ApolloServer<Context>
+    ),
   };
 });
 
@@ -29,9 +42,9 @@ describe("entrypoint (index.ts)", () => {
 
     expect(createApolloServer).toHaveBeenCalled();
 
-    expect(startStandaloneServer).toHaveBeenCalled();
-    const call = (startStandaloneServer as unknown as { mock: { calls: any[] } }).mock.calls[0];
-    expect(call[1].listen.port).toBe(4321);
+    const calls = (startStandaloneServer as unknown as Mock).mock.calls;
+    const opts = calls[0][1] as { listen: { port: number } };
+    expect(opts.listen.port).toBe(4321);
   });
 
   it("builds request context with Authorization header", async () => {
@@ -39,8 +52,10 @@ describe("entrypoint (index.ts)", () => {
 
     await import("./index.js");
 
-    const call = (startStandaloneServer as unknown as { mock: { calls: any[] } }).mock.calls[0];
-    const opts = call[1];
+    const calls = (startStandaloneServer as unknown as Mock).mock.calls;
+    const opts = calls[0][1] as {
+      context: (arg: { req: { headers: { authorization?: string } } }) => Promise<Context>;
+    };
 
     const ctx = await opts.context({
       req: { headers: { authorization: "Bearer test-token" } },
