@@ -23,30 +23,30 @@
         <div class='clearfix'>
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">0% </span>
+                <span class="strong">100% </span>
                 <span class="quiet">Statements</span>
-                <span class='fraction'>0/13</span>
+                <span class='fraction'>13/13</span>
             </div>
         
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">0% </span>
+                <span class="strong">20% </span>
                 <span class="quiet">Branches</span>
-                <span class='fraction'>0/1</span>
+                <span class='fraction'>1/5</span>
             </div>
         
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">0% </span>
+                <span class="strong">100% </span>
                 <span class="quiet">Functions</span>
-                <span class='fraction'>0/1</span>
+                <span class='fraction'>1/1</span>
             </div>
         
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">0% </span>
+                <span class="strong">100% </span>
                 <span class="quiet">Lines</span>
-                <span class='fraction'>0/13</span>
+                <span class='fraction'>13/13</span>
             </div>
         
             
@@ -61,7 +61,7 @@
             </div>
         </template>
     </div>
-    <div class='status-line low'></div>
+    <div class='status-line high'></div>
     <pre><table class="coverage">
 <tr><td class="line-count quiet"><a name='L1'></a><a href='#L1'>1</a>
 <a name='L2'></a><a href='#L2'>2</a>
@@ -80,40 +80,40 @@
 <a name='L15'></a><a href='#L15'>15</a>
 <a name='L16'></a><a href='#L16'>16</a>
 <a name='L17'></a><a href='#L17'>17</a>
-<a name='L18'></a><a href='#L18'>18</a></td><td class="line-coverage quiet"><span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
+<a name='L18'></a><a href='#L18'>18</a></td><td class="line-coverage quiet"><span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">1x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-yes">1x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">1x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">1x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span></td><td class="text"><pre class="prettyprint lang-js"><span class="cstat-no" title="statement not covered" ><span class="fstat-no" title="function not covered" ><span class="branch-0 cbranch-no" title="branch not covered" >import "dotenv/config";</span></span></span>
-<span class="cstat-no" title="statement not covered" >import { startStandaloneServer } from "@apollo/server/standalone";</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-neutral">&nbsp;</span></td><td class="text"><pre class="prettyprint lang-js">import "dotenv/config";
+import { startStandaloneServer } from "@apollo/server/standalone";
 &nbsp;
-<span class="cstat-no" title="statement not covered" >import { createApolloServer } from "./app.js";</span>
+import { createApolloServer } from "./app.js";
 &nbsp;
-<span class="cstat-no" title="statement not covered" >const server = createApolloServer(); </span>
-<span class="cstat-no" title="statement not covered" >const port = Number(process.env.PORT) || 4000;</span>
+const server = createApolloServer(); 
+const port = Number(process.env.PORT<span class="branch-0 cbranch-no" title="branch not covered" >) || 4000;</span>
 &nbsp;
-<span class="cstat-no" title="statement not covered" >const { url } = await startStandaloneServer(server, {</span>
-<span class="cstat-no" title="statement not covered" >  listen: { port },</span>
-<span class="cstat-no" title="statement not covered" >  context: async ({ req }) =&gt; ({ auth: req.headers.authorization ?? null }),</span>
-<span class="cstat-no" title="statement not covered" >});</span>
+const { url } = await startStandaloneServer(server, {
+  listen: { port },
+  context: async ({ req }) =&gt; ({ auth: req.headers.<span class="branch-0 cbranch-no" title="branch not covered" >authorization ?? null }</span>),
+});
 &nbsp;
-<span class="cstat-no" title="statement not covered" >console.log(`🚀 GraphQL at ${url}`);</span>
-<span class="cstat-no" title="statement not covered" >console.log(</span>
-<span class="cstat-no" title="statement not covered" >  `    ENV=${process.env.ENV ?? "(unset)"} NODE_ENV=${process.env.NODE_ENV ?? "(unset)"}`</span>
-<span class="cstat-no" title="statement not covered" >);</span>
+console.log(`🚀 GraphQL at ${url}`);
+console.log(
+  `    ENV=${process.env.<span class="branch-0 cbranch-no" title="branch not covered" >ENV ?? "(unset)"}</span> NODE_ENV=${<span class="branch-0 cbranch-no" title="branch not covered" >process.env.NODE_ENV ?? "(unset)"}</span>`
+);
 &nbsp;</pre></td></tr></table></pre>
 
                 <div class='push'></div><!-- for sticky footer -->
@@ -121,7 +121,7 @@
             <div class='footer quiet pad2 space-top1 center small'>
                 Code coverage generated by
                 <a href="https://istanbul.js.org/" target="_blank" rel="noopener noreferrer">istanbul</a>
-                at 2025-08-20T04:46:07.098Z
+                at 2025-08-20T05:02:53.007Z
             </div>
         <script src="prettify.js"></script>
         <script>
