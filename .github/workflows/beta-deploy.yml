@@ -69,7 +69,7 @@ jobs:
           registry-url: https://npm.pkg.github.com/
           scope: '@dcoutinho96'
       - run: echo "@dcoutinho96:registry=https://npm.pkg.github.com" > .npmrc
-      - run: npm ci
+      - run: npm ci --include=dev
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
       - run: npm run build
