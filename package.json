@@ -9,7 +9,7 @@
   },
   "scripts": {
     "dev": "node --loader ts-node/esm --experimental-specifier-resolution=node src/index.ts",
-    "prebuild": "npm run lint",
+    "prebuild": "npm run lint && npm run codegen",
     "build": "tsup src/index.ts --format esm --dts --out-dir dist --clean",
     "start": "node dist/index.js",
     "test": "vitest",
@@ -29,7 +29,7 @@
   "license": "ISC",
   "dependencies": {
     "@apollo/server": "^5.0.0",
-    "@dcoutinho96/spotify-clone-luizalabs-coding-challenge-graphql-schema": "^1.0.8",
+    "@dcoutinho96/spotify-clone-luizalabs-coding-challenge-graphql-schema": "^1.1.0",
     "axios": "^1.11.0",
     "dotenv": "^17.2.1",
     "graphql": "^16.11.0"
