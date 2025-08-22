@@ -10,7 +10,7 @@
   "scripts": {
     "dev": "node --loader ts-node/esm --experimental-specifier-resolution=node src/index.ts",
     "prebuild": "npm run lint",
-    "build": "tsc -p tsconfig.json",
+    "build": "tsup src/index.ts --format esm --dts --out-dir dist --clean",
     "start": "node dist/index.js",
     "test": "vitest",
     "test:unit": "vitest run --coverage",
@@ -45,6 +45,7 @@
     "globals": "^16.3.0",
     "nodemon": "^3.1.10",
     "ts-node": "^10.9.2",
+    "tsup": "^8.5.0",
     "typescript": "^5.9.2",
     "typescript-eslint": "^8.40.0",
     "vitest": "^3.2.4"
