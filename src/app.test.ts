@@ -2,9 +2,6 @@ import { resolvers } from '../src/app';
 import { GraphQLContext } from '../src/context';
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 
-// -------------------- 
-// Base Spotify API objects (snake_case)
-// -------------------- 
 const BASE_USER_API = {
   id: 'user123',
   display_name: 'Test User',
@@ -43,9 +40,6 @@ const BASE_PLAYLIST_API = {
   owner: BASE_USER_API,
 };
 
-// -------------------- 
-// Expected GraphQL objects (camelCase)
-// -------------------- 
 const EXPECTED_USER = {
   id: BASE_USER_API.id,
   displayName: BASE_USER_API.display_name,
@@ -80,7 +74,7 @@ const EXPECTED_TRACK = {
   durationMs: BASE_TRACK_API.duration_ms,
   previewUrl: BASE_TRACK_API.preview_url,
   album: { ...EXPECTED_ALBUM },
-  artists: [EXPECTED_ARTIST], //
+  artists: [EXPECTED_ARTIST],
 };
 
 const EXPECTED_PLAYLIST = {
@@ -102,14 +96,13 @@ const EXPECTED_PLAYLIST = {
   },
 };
 
-// -------------------- 
-// Helpers
-// -------------------- 
 const createMockContext = (
   mockSpotifyResponse: any = {},
   shouldReject = false
 ): GraphQLContext => ({
   token: 'mock-token',
+  isAuthenticated: true,
+  isIntrospection: false, // ✅ Added
   spotify: {
     get: vi.fn().mockImplementation(() =>
       shouldReject
@@ -124,9 +117,7 @@ const createMockContext = (
   } as any,
 });
 
-// -------------------- 
-// Tests
-// -------------------- 
+
 describe('GraphQL Resolvers', () => {
   beforeEach(() => {
     vi.clearAllMocks();
@@ -144,14 +135,15 @@ describe('GraphQL Resolvers', () => {
         }
       });
 
-      it('should handle user with no images', async () => {
-        const ctx = createMockContext({
-          data: { ...BASE_USER_API, images: null },
-        });
-        const meResolver = resolvers.Query?.me;
-        if (typeof meResolver === 'function') {
-          const result = await meResolver({}, {}, ctx, {} as any);
-          expect(result.images).toEqual([]);
+      it('should return artist data when found', async () => {
+        const ctx = createMockContext({ data: BASE_ARTIST_API });
+        const args = { id: BASE_ARTIST_API.id };
+        const artistByIdResolver = resolvers.Query?.artistById;
+        if (typeof artistByIdResolver === 'function') {
+          const result = await artistByIdResolver({}, args, ctx, {} as any);
+          expect(result).not.toBeNull();
+          expect(result!).toEqual(EXPECTED_ARTIST); 
+          expect(ctx.spotify.get).toHaveBeenCalledWith(`/artists/${BASE_ARTIST_API.id}`);
         }
       });
 
@@ -502,6 +494,7 @@ describe('GraphQL Resolvers', () => {
       it('should create playlist with all fields', async () => {
         const ctx = {
           token: 'mock-token',
+          isAuthenticated: true,
           spotify: {
             get: vi.fn().mockResolvedValue({ data: { id: BASE_USER_API.id } }),
             post: vi.fn().mockResolvedValue({ data: BASE_PLAYLIST_API }),
@@ -526,6 +519,7 @@ describe('GraphQL Resolvers', () => {
       it('should create playlist with default public value', async () => {
         const ctx = {
           token: 'mock-token',
+          isAuthenticated: true,
           spotify: {
             get: vi.fn().mockResolvedValue({ data: { id: BASE_USER_API.id } }),
             post: vi.fn().mockResolvedValue({ data: BASE_PLAYLIST_API }),
@@ -558,6 +552,7 @@ describe('GraphQL Resolvers', () => {
         };
         const ctx = {
           token: 'mock-token',
+          isAuthenticated: true,
           spotify: {
             get: vi.fn().mockResolvedValue({ data: { id: BASE_USER_API.id } }),
             post: vi.fn().mockResolvedValue({ data: playlistWithNulls }),

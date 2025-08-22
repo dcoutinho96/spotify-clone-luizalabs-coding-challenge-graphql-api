@@ -16,29 +16,29 @@ export type EnvLike = Partial<
 interface SpotifyArtist {
   id: string;
   name: string;
-  genres: string[];
-  popularity: number;
-  images: Array<{ url: string; height?: number; width?: number }>;
+  genres: string[] | null;
+  popularity: number | null;
+  images: Array<{ url: string; height?: number; width?: number }> | null;
 }
 
 interface SpotifyAlbum {
   id: string;
   name: string;
-  release_date: string;
-  total_tracks: number;
-  images: Array<{ url: string; height?: number; width?: number }>;
+  release_date: string | null;
+  total_tracks: number | null;
+  images: Array<{ url: string; height?: number; width?: number }> | null;
 }
 
 interface SpotifyPlaylist {
   id: string;
   name: string;
-  description: string;
-  public: boolean;
-  images: Array<{ url: string; height?: number; width?: number }>;
+  description: string | null;
+  public: boolean | null;
+  images: Array<{ url: string; height?: number; width?: number }> | null;
   owner: {
     id: string;
     display_name: string;
-    images: Array<{ url: string; height?: number; width?: number }>;
+    images: Array<{ url: string; height?: number; width?: number }> | null;
   };
 }
 
@@ -54,17 +54,19 @@ interface SpotifyTrack {
 interface SpotifyUser {
   id: string;
   display_name: string;
-  images: Array<{ url: string; height?: number; width?: number }>;
+  images: Array<{ url: string; height?: number; width?: number }> | null;
 }
 
 interface SpotifyPaginatedResponse<T> {
-  items: T[];
+  items: (T | null)[];
   next: string | null;
   previous: string | null;
   total: number;
 }
 
-// Shared transformation utilities
+// --------------------
+// Helpers
+// --------------------
 const createEmptyConnection = () => ({
   edges: [],
   pageInfo: {
@@ -91,16 +93,23 @@ const createConnection = <T, R>(
   data: SpotifyPaginatedResponse<T>,
   offset: number,
   transformer: (item: T, index: number) => R
-) => ({
-  edges: data.items.map((item, idx) => ({
-    cursor: String(offset + idx),
-    node: transformer(item, idx),
-  })),
-  pageInfo: createPageInfo(data, offset, data.items.length),
-  totalCount: data.total,
-});
+) => {
+  const validItems = (data.items ?? []).filter(
+    (item): item is T => item != null
+  );
+  return {
+    edges: validItems.map((item, idx) => ({
+      cursor: String(offset + idx),
+      node: transformer(item, idx),
+    })),
+    pageInfo: createPageInfo(data, offset, validItems.length),
+    totalCount: data.total,
+  };
+};
 
-// Transformation functions
+// --------------------
+// Transformers
+// --------------------
 const transformUser = (data: SpotifyUser) => ({
   id: data.id,
   displayName: data.display_name,
@@ -143,7 +152,9 @@ const transformTrack = (track: SpotifyTrack) => ({
   album: transformAlbum(track.album),
 });
 
-// API helper functions
+// --------------------
+// API helpers
+// --------------------
 const getPaginatedData = async <T>(
   ctx: GraphQLContext,
   endpoint: string,
@@ -171,14 +182,19 @@ const fetchSafeResource = async <T>(
   }
 };
 
+// --------------------
+// Resolvers
+// --------------------
 export const resolvers: Resolvers<GraphQLContext> = {
   Query: {
     me: async (_parent, _args, ctx) => {
+      if (!ctx.isAuthenticated) return null;
       const data = await ctx.spotify.get("/me");
       return transformUser(data.data);
     },
 
     myTopArtists: async (_parent, args, ctx) => {
+      if (!ctx.isAuthenticated) return createEmptyConnection();
       const data = await getPaginatedData<SpotifyArtist>(
         ctx,
         "/me/top/artists",
@@ -189,7 +205,10 @@ export const resolvers: Resolvers<GraphQLContext> = {
     },
 
     artistById: async (_parent, args, ctx) => {
-      const data = await fetchSafeResource<SpotifyArtist>(ctx, `/artists/${args.id}`);
+      const data = await fetchSafeResource<SpotifyArtist>(
+        ctx,
+        `/artists/${args.id}`
+      );
       return data ? transformArtist(data) : null;
     },
 
@@ -204,6 +223,7 @@ export const resolvers: Resolvers<GraphQLContext> = {
     },
 
     myPlaylists: async (_parent, args, ctx) => {
+      if (!ctx.isAuthenticated) return createEmptyConnection();
       const data = await getPaginatedData<SpotifyPlaylist>(
         ctx,
         "/me/playlists",
@@ -214,7 +234,10 @@ export const resolvers: Resolvers<GraphQLContext> = {
     },
 
     playlistById: async (_parent, args, ctx) => {
-      const data = await fetchSafeResource<SpotifyPlaylist>(ctx, `/playlists/${args.id}`);
+      const data = await fetchSafeResource<SpotifyPlaylist>(
+        ctx,
+        `/playlists/${args.id}`
+      );
       return data ? transformPlaylist(data) : null;
     },
   },
@@ -239,26 +262,36 @@ export const resolvers: Resolvers<GraphQLContext> = {
         args.limit,
         args.offset
       );
-      return createConnection(data, args.offset ?? 0, (item) => transformTrack(item.track));
+      return createConnection(data, args.offset ?? 0, (item) =>
+        transformTrack(item.track)
+      );
     },
   },
 
   Mutation: {
     createPlaylist: async (_parent, args, ctx) => {
+      if (!ctx.isAuthenticated) throw new Error("Authentication required");
+
       const userData = await ctx.spotify.get("/me");
       const user = userData.data as SpotifyUser;
-      
-      const playlistData = await ctx.spotify.post(`/users/${user.id}/playlists`, {
-        name: args.name,
-        description: args.description,
-        public: args.public ?? false,
-      });
+
+      const playlistData = await ctx.spotify.post(
+        `/users/${user.id}/playlists`,
+        {
+          name: args.name,
+          description: args.description,
+          public: args.public ?? false,
+        }
+      );
 
       return transformPlaylist(playlistData.data);
     },
   },
 };
 
+// --------------------
+// Apollo server factory
+// --------------------
 export function createApolloServer(env?: EnvLike): ApolloServer<GraphQLContext> {
   const e = { ...process.env, ...env } as Record<string, string | undefined>;
 

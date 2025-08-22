@@ -12,6 +12,8 @@ interface RequestLike {
 export interface GraphQLContext {
   token: string | null;
   spotify: ReturnType<typeof axios.create>;
+  isIntrospection: boolean;
+  isAuthenticated: boolean;
 }
 
 export async function createContext({
@@ -25,12 +27,12 @@ export async function createContext({
   if (body?.query) {
     try {
       const document = parse(body.query);
-      
+
       visit(document, {
         Field(node) {
           if (node.name.value.startsWith("__")) {
             isIntrospection = true;
-            return false; 
+            return false;
           }
         },
       });
@@ -40,29 +42,34 @@ export async function createContext({
   }
 
   const authHeader = req.headers["authorization"];
-  
-  if (!authHeader && !isIntrospection) {
-    throw new Error("Missing Authorization header");
-  }
-  
-  const token = typeof authHeader === "string"
-    ? authHeader.replace("Bearer ", "").trim()
-    : null;
+  const token =
+    typeof authHeader === "string"
+      ? authHeader.replace("Bearer ", "").trim()
+      : null;
 
-  if (!token && !isIntrospection) {
-    throw new Error("Invalid Authorization header format");
-  }
+  const isAuthenticated = !!token;
 
-  const spotifyUrl =
-    process.env.SPOTIFY_API_URL ?? "https://api.spotify.com/v1";
+  const spotifyUrl = process.env.SPOTIFY_API_URL ?? "https://api.spotify.com/v1";
 
   const spotify = axios.create({
     baseURL: spotifyUrl,
     headers: token ? { Authorization: `Bearer ${token}` } : {},
   });
 
+  spotify.interceptors.response.use(
+    (response) => response,
+    (error) => {
+      if (axios.isAxiosError(error) && error.response?.status === 401) {
+        return Promise.reject({ ...error, isUnauthenticated: true });
+      }
+      return Promise.reject(error);
+    }
+  );
+
   return {
     token,
     spotify,
+    isIntrospection,
+    isAuthenticated,
   };
 }

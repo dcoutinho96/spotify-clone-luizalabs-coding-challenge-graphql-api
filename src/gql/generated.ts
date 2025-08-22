@@ -129,7 +129,7 @@ export type Query = {
   __typename?: 'Query';
   artistAlbums: AlbumConnection;
   artistById?: Maybe<Artist>;
-  me: User;
+  me?: Maybe<User>;
   myPlaylists: PlaylistConnection;
   myTopArtists: ArtistConnection;
   playlistById?: Maybe<Playlist>;
@@ -404,7 +404,7 @@ export type PlaylistEdgeResolvers<ContextType = GraphQLContext, ParentType exten
 export type QueryResolvers<ContextType = GraphQLContext, ParentType extends ResolversParentTypes['Query'] = ResolversParentTypes['Query']> = {
   artistAlbums?: Resolver<ResolversTypes['AlbumConnection'], ParentType, ContextType, RequireFields<QueryArtistAlbumsArgs, 'artistId'>>;
   artistById?: Resolver<Maybe<ResolversTypes['Artist']>, ParentType, ContextType, RequireFields<QueryArtistByIdArgs, 'id'>>;
-  me?: Resolver<ResolversTypes['User'], ParentType, ContextType>;
+  me?: Resolver<Maybe<ResolversTypes['User']>, ParentType, ContextType>;
   myPlaylists?: Resolver<ResolversTypes['PlaylistConnection'], ParentType, ContextType, Partial<QueryMyPlaylistsArgs>>;
   myTopArtists?: Resolver<ResolversTypes['ArtistConnection'], ParentType, ContextType, Partial<QueryMyTopArtistsArgs>>;
   playlistById?: Resolver<Maybe<ResolversTypes['Playlist']>, ParentType, ContextType, RequireFields<QueryPlaylistByIdArgs, 'id'>>;
