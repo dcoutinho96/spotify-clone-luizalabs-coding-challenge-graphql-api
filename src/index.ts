@@ -1,16 +1,21 @@
-import "dotenv/config";
 import { startStandaloneServer } from "@apollo/server/standalone";
-import { createApolloServer } from "./app.js";
+import { createApolloServer } from "./app";
+import { createContext, GraphQLContext } from "./context";
 
-const server = createApolloServer();
-const port = Number(process.env.PORT) || 4000;
+async function main() {
+  const server = createApolloServer();
 
-const { url } = await startStandaloneServer(server, {
-  listen: { port },
-  context: async ({ req }) => ({ auth: req.headers.authorization ?? null }),
+  const { url } = await startStandaloneServer<GraphQLContext>(server, {
+    context: async ({ req }) => {
+      return createContext({ req }); 
+    },
+    listen: { port: Number(process.env.PORT) || 4000 },
+  });
+
+  console.info(`🚀 Server ready at ${url}`);
+}
+
+main().catch((err) => {
+  console.error(err);
+  process.exit(1);
 });
-
-console.info(`🚀 GraphQL at ${url}`);
-console.info(
-  `    ENV=${process.env.ENV ?? "(unset)"} NODE_ENV=${process.env.NODE_ENV ?? "(unset)"}`
-);

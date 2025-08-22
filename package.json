@@ -1,33 +1,44 @@
 {
   "name": "spotify-clone-luizalabs-coding-challenge-graphql-api",
-  "version": "1.0.1",
-  "description": "",
-  "main": "index.js",
+  "version": "1.1.0",
+  "description": "GraphQL API for Spotify Clone (Luiza Labs Coding Challenge)",
+  "main": "dist/index.js",
+  "type": "module",
+  "engines": {
+    "node": ">=20"
+  },
   "scripts": {
-    "dev": "ts-node --esm src/index.ts",
+    "dev": "node --loader ts-node/esm --experimental-specifier-resolution=node src/index.ts",
     "prebuild": "npm run lint",
     "build": "tsc -p tsconfig.json",
     "start": "node dist/index.js",
     "test": "vitest",
     "test:unit": "vitest run --coverage",
     "lint": "eslint . --ext .ts --max-warnings=0",
-    "lint:fix": "eslint . --ext .ts --fix"
+    "lint:fix": "eslint . --ext .ts --fix",
+    "codegen": "graphql-codegen --config codegen.ts"
   },
-  "keywords": [],
+  "keywords": [
+    "graphql",
+    "spotify",
+    "apollo",
+    "typescript",
+    "luizalabs"
+  ],
   "author": "",
   "license": "ISC",
-  "type": "module",
-  "engines": {
-    "node": ">=20"
-  },
   "dependencies": {
     "@apollo/server": "^5.0.0",
-    "@dcoutinho96/spotify-clone-luizalabs-coding-challenge-graphql-schema": "^0.2.0",
+    "@dcoutinho96/spotify-clone-luizalabs-coding-challenge-graphql-schema": "^1.0.8",
+    "axios": "^1.11.0",
     "dotenv": "^17.2.1",
     "graphql": "^16.11.0"
   },
   "devDependencies": {
     "@eslint/js": "^9.33.0",
+    "@graphql-codegen/cli": "^5.0.2",
+    "@graphql-codegen/typescript": "^4.0.3",
+    "@graphql-codegen/typescript-resolvers": "^4.0.3",
     "@types/node": "^24.3.0",
     "@vitest/coverage-v8": "^3.2.4",
     "eslint": "^9.33.0",

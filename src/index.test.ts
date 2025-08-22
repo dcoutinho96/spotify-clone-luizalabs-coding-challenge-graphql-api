@@ -1,66 +1,66 @@
-import { describe, it, expect, vi, beforeEach, type Mock } from "vitest";
+import { describe, it, expect, vi, beforeEach } from "vitest";
 import type { ApolloServer } from "@apollo/server";
+import type { GraphQLContext } from "./context";
 
-type Context = { auth: string | null };
+const startStandaloneServerMock = vi.fn();
+const createApolloServerMock = vi.fn();
+const createContextMock = vi.fn();
 
-// Mock startStandaloneServer so we don't start a real server
 vi.mock("@apollo/server/standalone", () => ({
-  startStandaloneServer: vi.fn(
-    async (
-      _server: ApolloServer<Context>,
-      opts: { listen?: { port?: number } } | undefined
-    ) => {
-      const port = opts?.listen?.port ?? 4000;
-      return { url: `http://localhost:${port}/` };
-    }
-  ),
+  startStandaloneServer: startStandaloneServerMock,
 }));
 
-// Mock createApolloServer to avoid constructing a real Apollo instance
-vi.mock("./app.js", async () => {
-  const actual = await vi.importActual<typeof import("./app.js")>("./app.js");
-  return {
-    ...actual,
-    createApolloServer: vi.fn(
-      () => ({}) as unknown as ApolloServer<Context>
-    ),
-  };
-});
+vi.mock("./app", () => ({
+  createApolloServer: createApolloServerMock,
+}));
+
+vi.mock("./context", () => ({
+  createContext: createContextMock,
+}));
 
 describe("entrypoint (index.ts)", () => {
   beforeEach(() => {
+    vi.clearAllMocks();
+    vi.resetModules();
     process.env.PORT = "4321";
-    process.env.ENV = "BETA";
-    process.env.NODE_ENV = "production";
   });
 
   it("starts the server on the configured port", async () => {
-    const { startStandaloneServer } = await import("@apollo/server/standalone");
-    const { createApolloServer } = await import("./app.js");
+    startStandaloneServerMock.mockResolvedValue({ url: "http://localhost:4321/" });
+    createApolloServerMock.mockReturnValue({} as ApolloServer<GraphQLContext>);
 
-    await import("./index.js");
+    await import("./index");
 
-    expect(createApolloServer).toHaveBeenCalled();
+    expect(createApolloServerMock).toHaveBeenCalledTimes(1);
+    expect(startStandaloneServerMock).toHaveBeenCalledTimes(1);
 
-    const calls = (startStandaloneServer as unknown as Mock).mock.calls;
+    const calls = startStandaloneServerMock.mock.calls;
     const opts = calls[0][1] as { listen: { port: number } };
     expect(opts.listen.port).toBe(4321);
   });
 
   it("builds request context with Authorization header", async () => {
-    const { startStandaloneServer } = await import("@apollo/server/standalone");
+    let capturedContext: any;
+    startStandaloneServerMock.mockImplementation(
+      async (_server: ApolloServer<GraphQLContext>, opts: any) => {
+        capturedContext = opts.context;
+        return { url: "http://localhost:4321/" };
+      }
+    );
+    createApolloServerMock.mockReturnValue({} as ApolloServer<GraphQLContext>);
+    createContextMock.mockImplementation(({ req }) => ({
+      token: req.headers.authorization ?? null,
+    }));
 
-    await import("./index.js");
+    await import("./index");
 
-    const calls = (startStandaloneServer as unknown as Mock).mock.calls;
-    const opts = calls[0][1] as {
-      context: (arg: { req: { headers: { authorization?: string } } }) => Promise<Context>;
-    };
-
-    const ctx = await opts.context({
+    const ctx = await capturedContext({
       req: { headers: { authorization: "Bearer test-token" } },
     });
 
-    expect(ctx).toEqual({ auth: "Bearer test-token" });
+    expect(createContextMock).toHaveBeenCalledWith({
+      req: { headers: { authorization: "Bearer test-token" } },
+    });
+    expect(ctx).toEqual({ token: "Bearer test-token" });
   });
 });
