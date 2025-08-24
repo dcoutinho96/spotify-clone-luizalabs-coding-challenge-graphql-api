@@ -12,23 +12,38 @@ import {
 import { SpotifyPlaylist, SpotifyTrack, SpotifyPaginatedResponse } from "#types/spotify";
 import { GraphQLError } from "graphql";
 
+/** Small local helper to produce an empty Relay-style connection */
+function emptyConnection<TNode>() {
+  return {
+    edges: [] as Array<{ cursor: string; node: TNode }>,
+    pageInfo: {
+      hasNextPage: false,
+      hasPreviousPage: false,
+      startCursor: null as string | null,
+      endCursor: null as string | null,
+    },
+    totalCount: 0,
+  };
+}
+
 export const playlistQueryResolvers: QueryResolvers<GraphQLContext> = {
   myPlaylists: async (_p, args, ctx) => {
     if (!ctx.isAuthenticated) {
-      return {
-        edges: [],
-        pageInfo: {
-          hasNextPage: false,
-          hasPreviousPage: false,
-          startCursor: null,
-          endCursor: null,
-        },
-        totalCount: 0,
-      };
+      return emptyConnection<ReturnType<typeof transformPlaylist>>();
     }
 
     try {
-      const data = await getMyPlaylists(ctx, args.limit ?? undefined, args.offset ?? undefined);
+      const data: SpotifyPaginatedResponse<SpotifyPlaylist> | null = await getMyPlaylists(
+        ctx,
+        args.limit ?? undefined,
+        args.offset ?? undefined
+      );
+
+      if (!data) {
+        // Service returned null (e.g., upstream issue) — return empty connection
+        return emptyConnection<ReturnType<typeof transformPlaylist>>();
+      }
+
       return createConnection(data, args.offset ?? 0, transformPlaylist);
     } catch (err: unknown) {
       if (err instanceof Error && err.message === "UNAUTHORIZED_SPOTIFY") {
@@ -62,13 +77,17 @@ export const playlistQueryResolvers: QueryResolvers<GraphQLContext> = {
 export const playlistFieldResolvers: PlaylistResolvers<GraphQLContext> = {
   tracks: async (parent, args, ctx) => {
     try {
-      const data: SpotifyPaginatedResponse<{ track: SpotifyTrack }> = await getPlaylistTracks(
+      const data: SpotifyPaginatedResponse<{ track: SpotifyTrack }> | null = await getPlaylistTracks(
         ctx,
         parent.id,
         args.limit ?? undefined,
         args.offset ?? undefined
       );
-      
+
+      if (!data) {
+        return emptyConnection<ReturnType<typeof transformTrack>>();
+      }
+
       return createConnection<{ track: SpotifyTrack }, ReturnType<typeof transformTrack>>(
         data,
         args.offset ?? 0,
