@@ -1,5 +1,5 @@
-import axios from "axios";
 import { parse, visit } from "graphql";
+import { createSpotifyClient } from "#services/spotify/client";
 
 interface RequestLike {
   headers: Record<string, string | string[] | undefined>;
@@ -11,7 +11,7 @@ interface RequestLike {
 
 export interface GraphQLContext {
   token: string | null;
-  spotify: ReturnType<typeof axios.create>;
+  spotify: ReturnType<typeof createSpotifyClient>;
   isIntrospection: boolean;
   isAuthenticated: boolean;
 }
@@ -27,7 +27,6 @@ export async function createContext({
   if (body?.query) {
     try {
       const document = parse(body.query);
-
       visit(document, {
         Field(node) {
           if (node.name.value.startsWith("__")) {
@@ -35,9 +34,9 @@ export async function createContext({
             return false;
           }
         },
-      });
-    } catch {
-      // Ignore parse errors, treat as non-introspection
+            });
+    } catch (_error) {
+      throw new Error("Failed to parse GraphQL query for introspection detection");
     }
   }
 
@@ -49,22 +48,7 @@ export async function createContext({
 
   const isAuthenticated = !!token;
 
-  const spotifyUrl = process.env.SPOTIFY_API_URL ?? "https://api.spotify.com/v1";
-
-  const spotify = axios.create({
-    baseURL: spotifyUrl,
-    headers: token ? { Authorization: `Bearer ${token}` } : {},
-  });
-
-  spotify.interceptors.response.use(
-    (response) => response,
-    (error) => {
-      if (axios.isAxiosError(error) && error.response?.status === 401) {
-        return Promise.reject({ ...error, isUnauthenticated: true });
-      }
-      return Promise.reject(error);
-    }
-  );
+  const spotify = createSpotifyClient(token);
 
   return {
     token,

@@ -10,11 +10,11 @@ vi.mock("@apollo/server/standalone", () => ({
   startStandaloneServer: startStandaloneServerMock,
 }));
 
-vi.mock("./app", () => ({
+vi.mock("#graphql/server", () => ({
   createApolloServer: createApolloServerMock,
 }));
 
-vi.mock("./context", () => ({
+vi.mock("#context", () => ({
   createContext: createContextMock,
 }));
 

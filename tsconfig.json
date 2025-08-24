@@ -3,23 +3,62 @@
     "target": "ES2022",
     "module": "ESNext",
     "moduleResolution": "Bundler",
-
     "rootDir": "src",
     "strict": true,
     "esModuleInterop": true,
     "forceConsistentCasingInFileNames": true,
     "skipLibCheck": true,
-
     "allowSyntheticDefaultImports": true,
     "resolveJsonModule": true,
-
     "baseUrl": ".",
     "paths": {
-      "#/*": ["src/*"]
+      "#/*": [
+        "src/*"
+      ],
+      "#graphql/*": [
+        "src/graphql/*"
+      ],
+      "#graphql/server": [
+        "src/graphql/server.ts"
+      ],
+      "#graphql/resolvers/*": [
+        "src/graphql/resolvers/*"
+      ],
+      "#mappers/*": [
+        "src/mappers/*"
+      ],
+      "#utils/*": [
+        "src/utils/*"
+      ],
+      "#types/*": [
+        "src/types/*"
+      ],
+      "#gql/*": [
+        "src/gql/*"
+      ],
+      "#gql/generated": [
+        "src/gql/generated.ts"
+      ],
+      "#context": [
+        "src/context.ts"
+      ],
+      "#services/*": [
+        "src/services/*"
+      ],
+      "#services/spotify/*": [
+        "src/services/spotify/*"
+      ]
     },
-
-    "types": ["vitest/globals", "node"]
+    "types": [
+      "vitest/globals",
+      "node"
+    ]
   },
-  "include": ["src/**/*"],
-  "exclude": ["dist", "node_modules"]
+  "include": [
+    "src/**/*"
+  ],
+  "exclude": [
+    "dist",
+    "node_modules"
+  ]
 }
