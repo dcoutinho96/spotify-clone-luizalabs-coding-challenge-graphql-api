@@ -38,52 +38,44 @@ describe("fetchSafeResource", () => {
     expect(mockContext.spotify.get).toHaveBeenCalledWith("/test-endpoint");
   });
 
-  it("returns null for non-401 axios errors", async () => {
+  it("throws SPOTIFY_API_ERROR for non-401 axios errors (5xx)", async () => {
     const axiosError = {
       isAxiosError: true,
       response: { status: 500 },
     };
     mockContext.spotify.get = vi.fn().mockRejectedValue(axiosError);
 
-    const result = await fetchSafeResource(mockContext, "/test-endpoint");
-
-    expect(result).toBeNull();
+    await expect(fetchSafeResource(mockContext, "/test-endpoint")).rejects.toThrow("SPOTIFY_API_ERROR");
     expect(mockContext.spotify.get).toHaveBeenCalledWith("/test-endpoint");
   });
 
-  it("returns null for non-axios errors", async () => {
+  it("throws SPOTIFY_API_ERROR for non-axios errors", async () => {
     const regularError = new Error("Network error");
     mockContext.spotify.get = vi.fn().mockRejectedValue(regularError);
 
-    const result = await fetchSafeResource(mockContext, "/test-endpoint");
-
-    expect(result).toBeNull();
+    await expect(fetchSafeResource(mockContext, "/test-endpoint")).rejects.toThrow("SPOTIFY_API_ERROR");
     expect(mockContext.spotify.get).toHaveBeenCalledWith("/test-endpoint");
   });
 
-  it("returns null for axios errors without response status", async () => {
+  it("throws SPOTIFY_API_ERROR for axios errors without response status", async () => {
     const axiosError = {
       isAxiosError: true,
       response: undefined,
     };
     mockContext.spotify.get = vi.fn().mockRejectedValue(axiosError);
 
-    const result = await fetchSafeResource(mockContext, "/test-endpoint");
-
-    expect(result).toBeNull();
+    await expect(fetchSafeResource(mockContext, "/test-endpoint")).rejects.toThrow("SPOTIFY_API_ERROR");
     expect(mockContext.spotify.get).toHaveBeenCalledWith("/test-endpoint");
   });
 
-  it("returns null for axios errors with null response", async () => {
+  it("throws SPOTIFY_API_ERROR for axios errors with null response", async () => {
     const axiosError = {
       isAxiosError: true,
       response: null,
     };
     mockContext.spotify.get = vi.fn().mockRejectedValue(axiosError);
 
-    const result = await fetchSafeResource(mockContext, "/test-endpoint");
-
-    expect(result).toBeNull();
+    await expect(fetchSafeResource(mockContext, "/test-endpoint")).rejects.toThrow("SPOTIFY_API_ERROR");
     expect(mockContext.spotify.get).toHaveBeenCalledWith("/test-endpoint");
   });
 });

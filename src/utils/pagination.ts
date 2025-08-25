@@ -1,6 +1,6 @@
 import { GraphQLContext } from "#context";
 import { SpotifyPaginatedResponse } from "#types/spotify";
-import { GraphQLError } from "graphql";
+import { extractSpotifyStatus } from "./error";
 
 export const createEmptyConnection = () => ({
   edges: [],
@@ -47,12 +47,11 @@ export async function getPaginatedData<T>(
       params: { limit: limit ?? 20, offset: offset ?? 0 },
     });
     return data;
-  } catch (error: unknown) {
-    if (error && typeof error === 'object' && ('isUnauthenticated' in error || ('response' in error && error.response && typeof error.response === 'object' && 'status' in error.response && error.response.status === 401))) {
-      throw new Error("UNAUTHORIZED_SPOTIFY");
-    }
-    throw new GraphQLError("Spotify API request failed", {
-      extensions: { code: "SPOTIFY_API_ERROR" },
-    });
+  } catch (err) {
+    const status = extractSpotifyStatus(err);
+
+    if (status === 401) throw new Error("UNAUTHORIZED_SPOTIFY");
+    if (status && status >= 400 && status < 500) throw new Error("NOT_FOUND_SPOTIFY");
+    throw new Error("SPOTIFY_API_ERROR");
   }
 }

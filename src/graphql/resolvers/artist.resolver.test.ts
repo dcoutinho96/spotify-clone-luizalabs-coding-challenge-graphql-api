@@ -78,12 +78,14 @@ describe("artistQueryResolvers", () => {
       expect(transformArtist).toHaveBeenCalledWith(mockSpotifyArtist);
     });
 
-    it("returns null when artist not found", async () => {
-      (getArtistById as any).mockResolvedValue(null);
+    it("throws GraphQLError with 404 status when artist not found (4xx)", async () => {
+      (getArtistById as any).mockRejectedValue(new Error("NOT_FOUND_SPOTIFY"));
 
-      const result = await (artistQueryResolvers.artistById as any)(null, { id: "nonexistent" }, mockContext);
-
-      expect(result).toBeNull();
+      await expect((artistQueryResolvers.artistById as any)(null, { id: "nonexistent" }, mockContext)).rejects.toThrow(
+        new GraphQLError("Resource not found on Spotify", {
+          extensions: { code: "NOT_FOUND_SPOTIFY", http: { status: 404 } },
+        })
+      );
       expect(getArtistById).toHaveBeenCalledWith(mockContext, "nonexistent");
       expect(transformArtist).not.toHaveBeenCalled();
     });

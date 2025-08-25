@@ -1,18 +1,18 @@
 import { GraphQLContext } from "#context";
-import axios from "axios";
+import { extractSpotifyStatus } from "./error";
 
 export async function fetchSafeResource<T>(
   ctx: GraphQLContext,
   endpoint: string
-): Promise<T | null> {
+): Promise<T> {
   try {
     const { data } = await ctx.spotify.get(endpoint);
     return data;
   } catch (err) {
-    if (axios.isAxiosError(err) && err.response?.status === 401) {
-      
-      throw new Error("UNAUTHORIZED_SPOTIFY");
-    }
-    return null; 
+    const status = extractSpotifyStatus(err);
+
+    if (status === 401) throw new Error("UNAUTHORIZED_SPOTIFY");
+    if (status && status >= 400 && status < 500) throw new Error("NOT_FOUND_SPOTIFY");
+    throw new Error("SPOTIFY_API_ERROR");
   }
 }

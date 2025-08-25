@@ -188,7 +188,7 @@ describe("pagination utilities", () => {
 
     it("throws UNAUTHORIZED_SPOTIFY error on 401 status", async () => {
       const axiosError = {
-        isUnauthenticated: true,
+        isAxiosError: true,
         response: { status: 401 },
       };
       mockContext.spotify.get = vi.fn().mockRejectedValue(axiosError);
@@ -196,21 +196,21 @@ describe("pagination utilities", () => {
       await expect(getPaginatedData(mockContext, "/test-endpoint")).rejects.toThrow("UNAUTHORIZED_SPOTIFY");
     });
 
-    it("throws UNAUTHORIZED_SPOTIFY error on isUnauthenticated flag", async () => {
+    it("throws NOT_FOUND_SPOTIFY for other 4xx statuses (e.g., 400)", async () => {
       const axiosError = {
-        isUnauthenticated: true,
-        response: { status: 500 },
+        isAxiosError: true,
+        response: { status: 400 },
       };
       mockContext.spotify.get = vi.fn().mockRejectedValue(axiosError);
 
-      await expect(getPaginatedData(mockContext, "/test-endpoint")).rejects.toThrow("UNAUTHORIZED_SPOTIFY");
+      await expect(getPaginatedData(mockContext, "/test-endpoint")).rejects.toThrow("NOT_FOUND_SPOTIFY");
     });
 
-    it("throws GraphQLError for other errors", async () => {
+    it("throws SPOTIFY_API_ERROR for other errors", async () => {
       const regularError = new Error("Network error");
       mockContext.spotify.get = vi.fn().mockRejectedValue(regularError);
 
-      await expect(getPaginatedData(mockContext, "/test-endpoint")).rejects.toThrow("Spotify API request failed");
+      await expect(getPaginatedData(mockContext, "/test-endpoint")).rejects.toThrow("SPOTIFY_API_ERROR");
     });
   });
 });

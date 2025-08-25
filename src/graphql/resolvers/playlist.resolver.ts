@@ -12,7 +12,6 @@ import {
 import { SpotifyPlaylist, SpotifyTrack, SpotifyPaginatedResponse } from "#types/spotify";
 import { GraphQLError } from "graphql";
 
-/** Small local helper to produce an empty Relay-style connection */
 function emptyConnection<TNode>() {
   return {
     edges: [] as Array<{ cursor: string; node: TNode }>,
@@ -24,6 +23,24 @@ function emptyConnection<TNode>() {
     },
     totalCount: 0,
   };
+}
+
+function handleSpotifyError(err: unknown): never {
+  if (err instanceof Error) {
+    if (err.message === "UNAUTHORIZED_SPOTIFY") {
+      throw new GraphQLError("Unauthorized: Spotify token invalid/expired", {
+        extensions: { code: "UNAUTHORIZED_SPOTIFY", http: { status: 401 } },
+      });
+    }
+    if (err.message === "NOT_FOUND_SPOTIFY") {
+      throw new GraphQLError("Resource not found on Spotify", {
+        extensions: { code: "NOT_FOUND_SPOTIFY", http: { status: 404 } },
+      });
+    }
+  }
+  throw new GraphQLError("Spotify API error", {
+    extensions: { code: "SPOTIFY_API_ERROR", http: { status: 502 } },
+  });
 }
 
 export const playlistQueryResolvers: QueryResolvers<GraphQLContext> = {
@@ -40,20 +57,12 @@ export const playlistQueryResolvers: QueryResolvers<GraphQLContext> = {
       );
 
       if (!data) {
-        // Service returned null (e.g., upstream issue) — return empty connection
         return emptyConnection<ReturnType<typeof transformPlaylist>>();
       }
 
       return createConnection(data, args.offset ?? 0, transformPlaylist);
     } catch (err: unknown) {
-      if (err instanceof Error && err.message === "UNAUTHORIZED_SPOTIFY") {
-        throw new GraphQLError("Unauthorized: Spotify token invalid/expired", {
-          extensions: { code: "UNAUTHORIZED_SPOTIFY", http: { status: 401 } },
-        });
-      }
-      throw new GraphQLError("Spotify API error", {
-        extensions: { code: "SPOTIFY_API_ERROR", http: { status: 502 } },
-      });
+      handleSpotifyError(err);
     }
   },
 
@@ -62,14 +71,7 @@ export const playlistQueryResolvers: QueryResolvers<GraphQLContext> = {
       const playlist = await getPlaylistById(ctx, args.id);
       return playlist ? transformPlaylist(playlist) : null;
     } catch (err: unknown) {
-      if (err instanceof Error && err.message === "UNAUTHORIZED_SPOTIFY") {
-        throw new GraphQLError("Unauthorized: Spotify token invalid/expired", {
-          extensions: { code: "UNAUTHORIZED_SPOTIFY", http: { status: 401 } },
-        });
-      }
-      throw new GraphQLError("Spotify API error", {
-        extensions: { code: "SPOTIFY_API_ERROR", http: { status: 502 } },
-      });
+      handleSpotifyError(err);
     }
   },
 };
@@ -94,14 +96,7 @@ export const playlistFieldResolvers: PlaylistResolvers<GraphQLContext> = {
         (item) => transformTrack(item.track)
       );
     } catch (err: unknown) {
-      if (err instanceof Error && err.message === "UNAUTHORIZED_SPOTIFY") {
-        throw new GraphQLError("Unauthorized: Spotify token invalid/expired", {
-          extensions: { code: "UNAUTHORIZED_SPOTIFY", http: { status: 401 } },
-        });
-      }
-      throw new GraphQLError("Spotify API error", {
-        extensions: { code: "SPOTIFY_API_ERROR", http: { status: 502 } },
-      });
+      handleSpotifyError(err);
     }
   },
 };
@@ -123,14 +118,7 @@ export const playlistMutationResolvers: MutationResolvers<GraphQLContext> = {
 
       return transformPlaylist(playlist);
     } catch (err: unknown) {
-      if (err instanceof Error && err.message === "UNAUTHORIZED_SPOTIFY") {
-        throw new GraphQLError("Unauthorized: Spotify token invalid/expired", {
-          extensions: { code: "UNAUTHORIZED_SPOTIFY", http: { status: 401 } },
-        });
-      }
-      throw new GraphQLError("Spotify API error", {
-        extensions: { code: "SPOTIFY_API_ERROR", http: { status: 502 } },
-      });
+      handleSpotifyError(err);
     }
   },
 };

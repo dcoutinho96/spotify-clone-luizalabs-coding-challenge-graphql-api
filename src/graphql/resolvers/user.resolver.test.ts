@@ -140,11 +140,15 @@ describe("user resolver", () => {
       expect(transformUser).not.toHaveBeenCalled();
     });
 
-    it("re-throws other errors from getMe", async () => {
+    it("throws SPOTIFY_API_ERROR for other errors from getMe", async () => {
       const otherError = new Error("Network error");
       (getMe as any).mockRejectedValue(otherError);
 
-      await expect((userQueryResolvers.me as any)(null, {}, mockContext)).rejects.toThrow(otherError);
+      await expect((userQueryResolvers.me as any)(null, {}, mockContext)).rejects.toThrow(
+        new GraphQLError("Spotify API error", {
+          extensions: { code: "SPOTIFY_API_ERROR", http: { status: 502 } },
+        })
+      );
 
       expect(getMe).toHaveBeenCalledWith(mockContext);
       expect(transformUser).not.toHaveBeenCalled();
