@@ -22,7 +22,7 @@ export interface SpotifyPlaylist {
   images: Array<{ url: string; height?: number; width?: number }> | null;
   owner: {
     id: string;
-    display_name: string;
+    display_name: string | null;
     images: Array<{ url: string; height?: number; width?: number }> | null;
   };
 }
@@ -38,7 +38,7 @@ export interface SpotifyTrack {
 
 export interface SpotifyUser {
   id: string;
-  display_name: string;
+  display_name: string | null; 
   images: Array<{ url: string; height?: number; width?: number }> | null;
 }
 

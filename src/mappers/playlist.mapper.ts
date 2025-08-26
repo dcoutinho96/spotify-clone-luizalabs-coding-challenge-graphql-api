@@ -1,6 +1,23 @@
-import { SpotifyPlaylist } from "#types/spotify";
+import { SpotifyPlaylist, SpotifyUser } from "#types/spotify";
 import { createEmptyConnection } from "#utils/pagination";
-import { transformUser } from "./user.mapper";
+
+function safeTransformUser(user: SpotifyUser | null | undefined) {
+  if (!user) {
+    return {
+      id: "unknown",
+      displayName: "Unknown User",
+      images: [],
+      __typename: "User" as const,
+    };
+  }
+
+  return {
+    id: user.id ?? "unknown",
+    displayName: user.display_name ?? user.id ?? "Unknown User",
+    images: user.images ?? [],
+    __typename: "User" as const,
+  };
+}
 
 export const transformPlaylist = (playlist: SpotifyPlaylist) => ({
   id: playlist.id,
@@ -8,6 +25,6 @@ export const transformPlaylist = (playlist: SpotifyPlaylist) => ({
   description: playlist.description ?? null,
   public: playlist.public ?? null,
   images: playlist.images ?? [],
-  owner: transformUser(playlist.owner),
+  owner: safeTransformUser(playlist.owner),
   tracks: createEmptyConnection(),
 });
